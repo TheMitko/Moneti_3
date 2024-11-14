@@ -167,22 +167,22 @@ function movePawns(startPointId, destinationPointId) {
           captureOptions.forEach(option => {
             updatePointDisplay(option.id);
           });
-          pawnsOnPoints[startPointId].пawns += numPawns;
-          if (pawnsOnPoints[startPointId].пawns === 1) {
+          pawnsOnPoints[startPointId].pawns += numPawns;
+          if (pawnsOnPoints[startPointId].pawns === 1) {
             pawnsOnPoints[startPointId].owner = currentPlayer;
           }
         }
       }, 10000); // Забавяне от 10 секунди
     } else {
       alert("Няма празни точки за кацане.");
-      pawnsOnPoints[startPointId].пawns += numPawns;
-      if (pawnsOnPoints[startPointId].пawns === 1) {
+      pawnsOnPoints[startPointId].pawns += numPawns;
+      if (pawnsOnPoints[startPointId].pawns === 1) {
         pawnsOnPoints[startPointId].owner = currentPlayer;
       }
       return;
     }
   } else {
-    pawnsOnPoints[destinationPointId].пawns += numPawns;
+    pawnsOnPoints[destinationPointId].pawns += numPawns;
     pawnsOnPoints[destinationPointId].owner = currentPlayer;
   }
 
@@ -234,7 +234,7 @@ function updatePointDisplay(pointId) {
     pawnsGroup.removeChild(existingDisplay);
   }
 
-  const pawnCount = pawnsOnPoints[pointId].пawns;
+  const pawnCount = pawnsOnPoints[pointId].pawns;
 
   if (pawnCount > 0) {
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
