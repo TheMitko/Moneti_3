@@ -248,16 +248,21 @@ function updatePointDisplay(pointId) {
     circle.setAttribute("fill", pawnsOnPoints[pointId].owner === 1 ? "blue" : "green");
     circle.style.cursor = "pointer"; // Настройка на курсора на pointer
 
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", point.x);
-    text.setAttribute("y", point.y + 5); // Настройка за центриране на текста
-    text.setAttribute("text-anchor", "middle");
-    text.setAttribute("dominant-baseline", "middle");
-    text.setAttribute("fill", "white");
-    text.setAttribute("font-size", "14"); // Увеличаване на размера на шрифта
-    text.textContent = pawnCount;
     group.appendChild(circle);
-    group.appendChild(text);
+
+    // Премахване на текста, ако Y е true
+    if (!Y) {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", point.x);
+      text.setAttribute("y", point.y + 5); // Настройка за центриране на текста
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.setAttribute("fill", "white");
+      text.setAttribute("font-size", "14"); // Увеличаване на размера на шрифта
+      text.textContent = pawnCount;
+      group.appendChild(text);
+    }
+
     pawnsGroup.appendChild(group);
   } else {
     const circle = document.getElementById(point.id);
@@ -269,7 +274,7 @@ function updatePointDisplay(pointId) {
   }
 }
 
-// Функция за рендиране на точки, връзки и добавяне на пулове
+
 // Функция за рендиране на точки, връзки и добавяне на пулове
 function renderMapElements() {
   const pointsGroup = document.getElementById("points");
