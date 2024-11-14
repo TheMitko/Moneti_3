@@ -62,8 +62,8 @@ function selectPoint(pointId) {
       selectedStartPoint = null;
     }
   }
-
-  // Функция за разпределяне на пуловете върху кликната точка
+}
+// Функция за разпределяне на пуловете върху кликната точка
 function placePawns(pointId) {
   const player = players[currentPlayer];
   if (player.remainingPawns <= 0) {
@@ -121,7 +121,7 @@ function movePawns(startPointId, destinationPointId) {
 
   // Актуализиране на броя пулове за преместването
   pawnsOnPoints[startPointId].pawns -= numPawns;
-  if (pawnsOnPoints[startPointId].пawns === 0) {
+  if (pawnsOnPoints[startPointId].pawns === 0) {
     pawnsOnPoints[startPointId].owner = null;
     console.log(`Пулове на точка ${startPointId} бяха преместени.`);
   }
@@ -159,14 +159,14 @@ function movePawns(startPointId, destinationPointId) {
       });
     } else {
       alert("Няма празни точки за кацане.");
-      pawnsOnPoints[startPointId].пawns += numPawns;
-      if (pawnsOnPoints[startPointId].пawns === 1) {
+      pawnsOnPoints[startPointId].pawns += numPawns;
+      if (pawnsOnPoints[startPointId].pawns === 1) {
         pawnsOnPoints[startPointId].owner = currentPlayer;
       }
       return;
     }
   } else {
-    pawnsOnPoints[destinationPointId].пawns += numPawns;
+    pawnsOnPoints[destinationPointId].pawns += numPawns;
     pawnsOnPoints[destinationPointId].owner = currentPlayer;
   }
 
@@ -204,6 +204,7 @@ function switchTurn() {
       const textElement = point.querySelector('text');
       if (textElement) {
         point.removeChild(textElement);
+        console.log(`Точката ${pointId} е скрита по време на преминаване на хода.`);
       }
     }
   });
@@ -211,7 +212,6 @@ function switchTurn() {
   X = false;
   Y = false;
 }
-
 // Функция за обработка на избора на точка за кацане при улавяне
 function handleCaptureChoice(pointId) {
   const validChoice = captureOptions.find(option => option === pointId);
@@ -303,9 +303,9 @@ function updatePointDisplay(pointId) {
       circle.setAttribute("fill", "red");
       circle.style.cursor = "pointer"; // Настройка на курсора на pointer
     }
+    console.log(`Точката ${pointId} е скрита, защото няма пулове.`);
   }
 }
-
 // Функция за рендиране на точки, връзки и добавяне на пулове
 function renderMapElements() {
   const pointsGroup = document.getElementById("points");
@@ -347,5 +347,3 @@ function renderMapElements() {
 
 // Инициализиране на играта
 renderMapElements();
-
-}
