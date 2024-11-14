@@ -62,9 +62,8 @@ function selectPoint(pointId) {
       selectedStartPoint = null;
     }
   }
-}
 
-// Функция за разпределяне на пуловете върху кликната точка
+  // Функция за разпределяне на пуловете върху кликната точка
 function placePawns(pointId) {
   const player = players[currentPlayer];
   if (player.remainingPawns <= 0) {
@@ -122,8 +121,9 @@ function movePawns(startPointId, destinationPointId) {
 
   // Актуализиране на броя пулове за преместването
   pawnsOnPoints[startPointId].pawns -= numPawns;
-  if (pawnsOnPoints[startPointId].pawns === 0) {
+  if (pawnsOnPoints[startPointId].пawns === 0) {
     pawnsOnPoints[startPointId].owner = null;
+    console.log(`Пулове на точка ${startPointId} бяха преместени.`);
   }
 
   if (!pawnsOnPoints[destinationPointId]) {
@@ -140,82 +140,115 @@ function movePawns(startPointId, destinationPointId) {
     });
 
     if (capturePoints.length > 0) {
-      captureOptions = capturePoints.map((pointId, index) => ({ id: pointId, label: String.fromCharCode(65 + index) }));
+      captureOptions = capturePoints.map(pointId => pointId);
       captureOptions.forEach(option => {
-        highlightCaptureOption(option.id, option.label);
+        highlightCaptureOption(option);
       });
 
       // Премахване на противниковите пулове
       pawnsOnPoints[destinationPointId] = { pawns: 0, owner: null };
+      console.log(`Пулове на точка ${destinationPointId} бяха изтрити, защото бяха прескочени.`);
       updatePointDisplay(destinationPointId);
 
-      setTimeout(() => {
-        const options = captureOptions.map(option => option.label).join(', ');
-        const choice = prompt(`Изберете на коя точка да кацнете: ${options}`);
+      alert("Изберете точка за кацане");
 
-        const chosenOption = captureOptions.find(option => option.label === choice);
-        if (chosenOption) {
-          Y = true; // Поставяне на Y на true при направен избор
-
-          // Кацане на нашия пул на избраната точка
-          pawnsOnPoints[chosenOption.id] = { pawns: 1, owner: currentPlayer };
-          updatePointDisplay(chosenOption.id);
-
-          handleCaptureChoice(chosenOption.id);
-        } else {
-          alert("Невалиден избор. Моля, изберете валидна точка.");
-          captureOptions.forEach(option => {
-            updatePointDisplay(option.id);
-          });
-          pawnsOnPoints[startPointId].pawns += numPawns;
-          if (pawnsOnPoints[startPointId].pawns === 1) {
-            pawnsOnPoints[startPointId].owner = currentPlayer;
-          }
-        }
-      }, 10000); // Забавяне от 10 секунди
+      captureOptions.forEach(option => {
+        document.getElementById(option).addEventListener("click", () => {
+          handleCaptureChoice(option);
+        });
+      });
     } else {
       alert("Няма празни точки за кацане.");
-      pawnsOnPoints[startPointId].pawns += numPawns;
-      if (pawnsOnPoints[startPointId].pawns === 1) {
+      pawnsOnPoints[startPointId].пawns += numPawns;
+      if (pawnsOnPoints[startPointId].пawns === 1) {
         pawnsOnPoints[startPointId].owner = currentPlayer;
       }
       return;
     }
   } else {
-    pawnsOnPoints[destinationPointId].pawns += numPawns;
+    pawnsOnPoints[destinationPointId].пawns += numPawns;
     pawnsOnPoints[destinationPointId].owner = currentPlayer;
   }
 
   updatePointDisplay(startPointId);
   updatePointDisplay(destinationPointId);
 
+  // Проверка за победа
+  const allPoints = Object.values(pawnsOnPoints);
+  const allBlue = allPoints.every(point => point.owner === 1);
+  const allGreen = allPoints.every(point => point.owner === 2);
+
+  if (allBlue) {
+    alert("Играч 1 печели играта!");
+    return;
+  } else if (allGreen) {
+    alert("Играч 2 печели играта!");
+    return;
+  }
+
   // Превключване на редовете между играчите
   if (!X || (X && Y)) {
-    currentPlayer = currentPlayer === 1 ? 2 : 1;
-    alert(`Сега е ред на играч ${currentPlayer} да мести пуловете си.`);
-    X = false;
-    Y = false;
+    switchTurn();
   }
 }
 
+// Превключване на редовете между играчите
+function switchTurn() {
+  currentPlayer = currentPlayer === 1 ? 2 : 1;
+  alert(`Сега е ред на играч ${currentPlayer} да мести пуловете си.`);
+  
+  // Премахване на текста от всички точки
+  Object.keys(pawnsOnPoints).forEach(pointId => {
+    const point = document.getElementById(pointId);
+    if (point) {
+      const textElement = point.querySelector('text');
+      if (textElement) {
+        point.removeChild(textElement);
+      }
+    }
+  });
+
+  X = false;
+  Y = false;
+}
+
+// Функция за обработка на избора на точка за кацане при улавяне
+function handleCaptureChoice(pointId) {
+  const validChoice = captureOptions.find(option => option === pointId);
+  if (!validChoice) {
+    alert("Невалидна точка за кацане. Моля, изберете валидна точка.");
+    return;
+  }
+
+  captureOptions.forEach(option => {
+    const circle = document.getElementById(option);
+    if (circle) {
+      circle.setAttribute("r", 7); // Връщане към нормален радиус
+      circle.setAttribute("fill", "red");
+    }
+  });
+
+  pawnsOnPoints[validChoice] = { pawns: 1, owner: currentPlayer };
+  updatePointDisplay(validChoice);
+  captureOptions = [];
+
+  Y = true; // Поставяне на Y на true след избора
+
+  if (X && Y) {
+    X = false;
+    Y = false; // Нулиране на Y след обработка на улавянето
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
+    alert(`Сега е ред на играч ${currentPlayer} да мести пуловете си.`);
+  }
+}
 
 // Функция за подчертаване на опция за кацане при улавяне
-function highlightCaptureOption(pointId, label) {
+function highlightCaptureOption(pointId) {
   const point = pointsData.find(p => p.id === pointId);
   if (point) {
     const circle = document.getElementById(point.id);
     circle.setAttribute("fill", "yellow");
     circle.setAttribute("r", 10); // Увеличаване на радиуса на точката
-
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", point.x);
-    text.setAttribute("y", point.y + 5);
-    text.setAttribute("text-anchor", "middle");
-    text.setAttribute("dominant-baseline", "middle");
-    text.setAttribute("fill", "black");
-    text.setAttribute("font-size", "14");
-    text.textContent = label;
-    document.getElementById("points").appendChild(text);
   }
 }
 
@@ -250,8 +283,7 @@ function updatePointDisplay(pointId) {
 
     group.appendChild(circle);
 
-    // Премахване на текста, ако Y е true
-    if (!Y) {
+    if (!Y) { // Премахване на текста, ако Y е true
       const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
       text.setAttribute("x", point.x);
       text.setAttribute("y", point.y + 5); // Настройка за центриране на текста
@@ -273,7 +305,6 @@ function updatePointDisplay(pointId) {
     }
   }
 }
-
 
 // Функция за рендиране на точки, връзки и добавяне на пулове
 function renderMapElements() {
@@ -314,109 +345,7 @@ function renderMapElements() {
   });
 }
 
-// Функция за подчертаване на опция за кацане при улавяне
-function highlightCaptureOption(pointId, label) {
-  const point = pointsData.find(p => p.id === pointId);
-  if (point) {
-    const circle = document.getElementById(point.id);
-    circle.setAttribute("fill", "yellow");
-    circle.setAttribute("r", 10); // Увеличаване на радиуса на точката
-
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", point.x);
-    text.setAttribute("y", point.y + 5);
-    text.setAttribute("text-anchor", "middle");
-    text.setAttribute("dominant-baseline", "middle");
-    text.setAttribute("fill", "black");
-    text.setAttribute("font-size", "14");
-    text.textContent = label;
-    document.getElementById("points").appendChild(text);
-  }
-}
-
-// Функция за актуализиране на визуализацията на точка според броя пулове
-// Функция за актуализиране на визуализацията на точка според броя пулове
-function updatePointDisplay(pointId) {
-  const pawnsGroup = document.getElementById("pawns");
-  const point = pointsData.find(p => p.id === pointId);
-  if (!point) {
-    console.error(`Точка с id ${pointId} не е намерена`);
-    return;
-  }
-
-  // Премахване на съществуващото изображение
-  const existingDisplay = pawnsGroup.querySelector(`[data-point-id="${pointId}"]`);
-  if (existingDisplay) {
-    pawnsGroup.removeChild(existingDisplay);
-  }
-
-  const pawnCount = pawnsOnPoints[pointId].pawns;
-
-  if (pawnCount > 0) {
-    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.setAttribute("data-point-id", pointId);
-    group.addEventListener("click", () => selectPoint(pointId)); // Добавяне на клик събитие към групата
-
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", point.x);
-    circle.setAttribute("cy", point.y);
-    circle.setAttribute("r", 16); // Увеличаване на радиуса на кръга
-    circle.setAttribute("fill", pawnsOnPoints[pointId].owner === 1 ? "blue" : "green");
-    circle.style.cursor = "pointer"; // Настройка на курсора на pointer
-
-    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    text.setAttribute("x", point.x);
-    text.setAttribute("y", point.y + 5); // Настройка за центриране на текста
-    text.setAttribute("text-anchor", "middle");
-    text.setAttribute("dominant-baseline", "middle");
-    text.setAttribute("fill", "white");
-    text.setAttribute("font-size", "14"); // Увеличаване на размера на шрифта
-    text.textContent = pawnCount;
-    group.appendChild(circle);
-    group.appendChild(text);
-    pawnsGroup.appendChild(group);
-  } else {
-    const circle = document.getElementById(point.id);
-    if (circle) {
-      circle.setAttribute("r", 7); // Начален радиус
-      circle.setAttribute("fill", "red");
-      circle.style.cursor = "pointer"; // Настройка на курсора на pointer
-    }
-  }
-}
-
-// Функция за обработка на избора на точка за кацане при улавяне
-function handleCaptureChoice(pointId) {
-  const validChoice = captureOptions.find(option => option.id === pointId);
-  if (!validChoice) {
-    alert("Невалидна точка за кацане. Моля, изберете валидна точка.");
-    return;
-  }
-
-  captureOptions.forEach(option => {
-    const circle = document.getElementById(option.id);
-    if (circle) {
-      circle.setAttribute("r", 7); // Връщане към нормален радиус
-      circle.setAttribute("fill", "red");
-    }
-    const text = document.querySelector(`[data-point-id="${option.id}"] text`);
-    if (text) {
-      text.remove();
-    }
-    updatePointDisplay(option.id);
-  });
-
-  pawnsOnPoints[validChoice.id] = { pawns: 1, owner: currentPlayer };
-  captureOptions = [];
-  updatePointDisplay(validChoice.id);
-
-  if (X && Y) {
-    X = false;
-    Y = false;
-    currentPlayer = currentPlayer === 1 ? 2 : 1;
-    alert(`Сега е ред на играч ${currentPlayer} да мести пуловете си.`);
-  }
-}
-
 // Инициализиране на играта
 renderMapElements();
+
+}
