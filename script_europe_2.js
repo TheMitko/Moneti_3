@@ -150,8 +150,6 @@ function movePawns(startPointId, destinationPointId) {
       console.log(`Пулове на точка ${destinationPointId} бяха изтрити, защото бяха прескочени.`);
       updatePointDisplay(destinationPointId);
 
-      alert("Изберете точка за кацане");
-
       captureOptions.forEach(option => {
         document.getElementById(option).addEventListener("click", () => {
           handleCaptureChoice(option);
