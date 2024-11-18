@@ -1,5 +1,6 @@
 // Зареждане на начални данни за играта от localStorage
-const gameData = JSON.parse(localStorage.getItem("gameData")) || { pawnsCount: 3 }; 
+const gameData = JSON.parse(localStorage.getItem("gameData")) || { pawnsCount: 3 };
+let isMoveDone = false; // Променлива за следене дали е направен валиден ход
 let selectedStartPoint = null;
 let isMovingPhase = false; // Следене на фазата на преместване
 let currentPlayer = 1; // Следене на текущия играч
@@ -157,17 +158,22 @@ function movePawns(startPointId, destinationPointId) {
           handleCaptureChoice(option);
         });
       });
+
+      return; // Изчаква избор на точка за кацане
     } else {
       alert("Няма празни точки за кацане.");
       pawnsOnPoints[startPointId].pawns += numPawns;
       if (pawnsOnPoints[startPointId].pawns === 1) {
         pawnsOnPoints[startPointId].owner = currentPlayer;
       }
+
+      isMoveDone = false; // Ходът е неуспешен
       return;
     }
   } else {
     pawnsOnPoints[destinationPointId].pawns += numPawns;
     pawnsOnPoints[destinationPointId].owner = currentPlayer;
+    isMoveDone = true; // Установяване на isMoveDone на true при успешно местене
   }
 
   updatePointDisplay(startPointId);
@@ -187,7 +193,7 @@ function movePawns(startPointId, destinationPointId) {
   }
 
   // Превключване на редовете между играчите
-  if (!X || (X && Y)) {
+  if (isMoveDone) {
     switchTurn();
   }
 }
@@ -211,7 +217,9 @@ function switchTurn() {
 
   X = false;
   Y = false;
+  isMoveDone = false; // Нулиране на isMoveDone в началото на хода на следващия играч
 }
+
 // Функция за обработка на избора на точка за кацане при улавяне
 function handleCaptureChoice(pointId) {
   const validChoice = captureOptions.find(option => option === pointId);
